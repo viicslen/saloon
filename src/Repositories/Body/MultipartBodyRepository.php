@@ -127,9 +127,9 @@ class MultipartBodyRepository implements BodyRepository, MergeableBody
      */
     public function get(string|int $key, mixed $default = null): MultipartValue|array
     {
-        $values = array_filter($this->all(), static function (MultipartValue $value) use ($key) {
+        $values = array_values(array_filter($this->all(), static function (MultipartValue $value) use ($key) {
             return $value->name === $key;
-        });
+        }));
 
         if (count($values) === 0) {
             return $default;
