@@ -51,6 +51,7 @@ Please see [here](../.github/SECURITY.md) for our security policy.
 ## Credits
 
 - [Sam Carré](https://github.com/Sammyjo20)
+- [Braunson Yager](https://github.com/Braunson)
 - [All Contributors](https://github.com/Sammyjo20/Saloon/contributors)
 
 And a special thanks to [Caneco](https://twitter.com/caneco) for the logo ✨
