@@ -57,9 +57,9 @@ class Response
     /**
      * The decoded JSON response object.
      *
-     * @var object<object-key, mixed>
+     * @var mixed
      */
-    protected object $decodedJsonObject;
+    protected mixed $decodedJsonObject;
 
     /**
      * The decoded XML response.
