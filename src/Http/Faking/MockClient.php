@@ -259,7 +259,12 @@ class MockClient
         PHPUnit::assertTrue($result, 'An unexpected request was sent.');
     }
 
-
+    /**
+     * Assert that given requests were sent in order
+     *
+     * @param array<\Closure|class-string<Request>|string> $callbacks
+     * @return void
+     */
     public function assertSentInOrder(array $callbacks): void
     {
         $this->assertSentCount(count($callbacks));
@@ -320,7 +325,6 @@ class MockClient
             return $this->checkClosureAgainstResponses($request, $index);
         }
 
-
         if (is_string($request)) {
             if (class_exists($request) && Helpers::isSubclassOf($request, Request::class)) {
                 $passed = $this->findResponseByRequest($request, $index) instanceof Response;
@@ -349,8 +353,9 @@ class MockClient
             return null;
         }
 
-        if($index) {
+        if(! is_null($index)) {
             $recordedResponse = $this->getRecordedResponses()[$index];
+
             if ($recordedResponse->getPendingRequest()->getRequest() instanceof $request) {
                 return $recordedResponse;
             }
@@ -380,7 +385,7 @@ class MockClient
             return null;
         }
 
-        if($index) {
+        if(! is_null($index)) {
             $response = $this->getRecordedResponses()[$index];
             $pendingRequest = $response->getPendingRequest();
 
@@ -447,7 +452,7 @@ class MockClient
             return false;
         }
 
-        if($index) {
+        if(! is_null($index)) {
             $response = $this->getRecordedResponses()[$index];
             $request = $response->getPendingRequest()->getRequest();
 
