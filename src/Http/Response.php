@@ -231,8 +231,8 @@ class Response
     /**
      * Get the JSON decoded body of the response as an object or scalar value.
      *
-     * @param string|null $key
-     * @return ($key is null ? object<object-key, mixed> : mixed)
+     * @param string|int|null $key
+     * @return mixed
      */
     public function object(string|int|null $key = null, mixed $default = null): mixed
     {
@@ -244,7 +244,7 @@ class Response
             return $this->decodedJsonObject;
         }
 
-        return ObjectHelpers::get($this->decodedJsonObject, $key, $default);
+        return ObjectHelpers::get($this->decodedJsonObject, (string)$key, $default);
     }
 
     /**
