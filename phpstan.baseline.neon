@@ -6,6 +6,11 @@ parameters:
 			path: src/Http/Connector.php
 
 		-
+			message: "#^Parameter \\#1 \\$contents of static method Saloon\\\\Data\\\\RecordedResponse\\:\\:fromFile\\(\\) expects string, bool\\|string given\\.$#"
+			count: 1
+			path: src/Http/Faking/Fixture.php
+
+		-
 			message: "#^Method Saloon\\\\Http\\\\Faking\\\\MockClient\\:\\:getLastResponse\\(\\) should return Saloon\\\\Http\\\\Response\\|null but returns \\(callable\\)\\|Saloon\\\\Http\\\\Faking\\\\Fixture\\|Saloon\\\\Http\\\\Faking\\\\MockResponse\\.$#"
 			count: 1
 			path: src/Http/Faking/MockClient.php
@@ -14,6 +19,11 @@ parameters:
 			message: "#^Method Saloon\\\\Http\\\\Faking\\\\MockClient\\:\\:getRecordedResponses\\(\\) should return array\\<Saloon\\\\Http\\\\Response\\> but returns array\\<\\(callable\\)\\|Saloon\\\\Http\\\\Faking\\\\Fixture\\|Saloon\\\\Http\\\\Faking\\\\MockResponse\\>\\.$#"
 			count: 1
 			path: src/Http/Faking/MockClient.php
+
+		-
+		 message: "#^Result of \\&\\& is always false.$#"
+		 count: 1
+		 path: src/Data/MultipartValue.php
 
 		-
 		 message: "#^Parameter \\#1 \\$response of method Saloon\\\\Http\\\\PendingRequest\\:\\:executeResponsePipeline\\(\\) expects Saloon\\\\Http\\\\Response\\, GuzzleHttp\\\\Promise\\\\PromiseInterface\\|Saloon\\\\Http\\\\Response given.$#"
