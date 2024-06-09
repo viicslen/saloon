@@ -263,7 +263,6 @@ class MockClient
      * Assert that given requests were sent in order
      *
      * @param array<\Closure|class-string<Request>|string> $callbacks
-     * @return void
      */
     public function assertSentInOrder(array $callbacks): void
     {

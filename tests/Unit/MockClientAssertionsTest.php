@@ -244,8 +244,6 @@ test('it can assert requests are sent in a specific order failure', function () 
     $connector->send(new UserRequest(userId: 1), $mockClient);
     $connector->send(new UserRequest(), $mockClient);
 
-
-
     $mockClient->assertSentInOrder([
         UserRequest::class,
         function (UserRequest $request) {
