@@ -21,51 +21,6 @@ parameters:
 			path: src/Http/Faking/MockClient.php
 
 		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Http/Connector.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Http/PendingRequest.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Http/Request.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Repositories/ArrayStore.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Repositories/IntegerStore.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Repositories/Body/ArrayBodyRepository.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Repositories/Body/MultipartBodyRepository.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Repositories/Body/StringBodyRepository.php
-
-		-
-			message: "#^Parameter \\#2 \\$ of callable callable\\(\\$this, TValue\\)\\: void expects TValue\\, array\\|float\\|int\\|string\\|false\\|null given.$#"
-			count: 2
-			path: src/Repositories/Body/StreamBodyRepository.php
-
-		-
 		 message: "#^Result of \\&\\& is always false.$#"
 		 count: 1
 		 path: src/Data/MultipartValue.php
@@ -86,11 +41,6 @@ parameters:
 		 path: src/Http/Faking/MockClient.php
 
 		-
-		 message: "#^Match arm is unreachable because previous comparison is always true.$#"
-		 count: 1
-		 path: src/Http/Pool.php
-
-		-
 		 message: "#^Parameter \\#1 \\$object of method ReflectionMethod\\:\\:invoke\\(\\) expects object\\|null, class-string\\|object given.$#"
 		 count: 2
 		 path: src/Traits/Macroable.php
@@ -99,3 +49,8 @@ parameters:
 		 message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, \\(callable\\(\\)\\: mixed\\)\\|object given.$#"
 		 count: 4
 		 path: src/Traits/Macroable.php
+
+		-
+		 message: "#^Match arm is unreachable because previous comparison is always true.$#"
+		 count: 1
+		 path: src/Http/Pool.php

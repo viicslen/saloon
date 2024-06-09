@@ -260,6 +260,22 @@ class MockClient
     }
 
     /**
+     * Assert that given requests were sent in order
+     *
+     * @param array<\Closure|class-string<Request>|string> $callbacks
+     */
+    public function assertSentInOrder(array $callbacks): void
+    {
+        $this->assertSentCount(count($callbacks));
+
+        foreach ($callbacks as $index => $callback) {
+            $result = $this->checkRequestWasSent($callback, $index);
+
+            PHPUnit::assertTrue($result, 'An expected request (#'.($index + 1).') was not sent.');
+        }
+    }
+
+    /**
      * Assert JSON response data was received
      *
      * @deprecated This method will be removed in v4
@@ -300,19 +316,19 @@ class MockClient
     /**
      * Check if a given request was sent
      */
-    protected function checkRequestWasSent(string|callable $request): bool
+    protected function checkRequestWasSent(string|callable $request, ?int $index = null): bool
     {
         $passed = false;
 
         if (is_callable($request)) {
-            return $this->checkClosureAgainstResponses($request);
+            return $this->checkClosureAgainstResponses($request, $index);
         }
 
         if (is_string($request)) {
             if (class_exists($request) && Helpers::isSubclassOf($request, Request::class)) {
-                $passed = $this->findResponseByRequest($request) instanceof Response;
+                $passed = $this->findResponseByRequest($request, $index) instanceof Response;
             } else {
-                $passed = $this->findResponseByRequestUrl($request) instanceof Response;
+                $passed = $this->findResponseByRequestUrl($request, $index) instanceof Response;
             }
         }
 
@@ -330,10 +346,18 @@ class MockClient
     /**
      * Assert a given request was sent.
      */
-    public function findResponseByRequest(string $request): ?Response
+    public function findResponseByRequest(string $request, ?int $index = null): ?Response
     {
         if ($this->checkHistoryEmpty() === true) {
             return null;
+        }
+
+        if(! is_null($index)) {
+            $recordedResponse = $this->getRecordedResponses()[$index];
+
+            if ($recordedResponse->getPendingRequest()->getRequest() instanceof $request) {
+                return $recordedResponse;
+            }
         }
 
         $lastRequest = $this->getLastRequest();
@@ -354,9 +378,20 @@ class MockClient
     /**
      * Find a request that matches a given url pattern
      */
-    public function findResponseByRequestUrl(string $url): ?Response
+    public function findResponseByRequestUrl(string $url, ?int $index = null): ?Response
     {
         if ($this->checkHistoryEmpty() === true) {
+            return null;
+        }
+
+        if(! is_null($index)) {
+            $response = $this->getRecordedResponses()[$index];
+            $pendingRequest = $response->getPendingRequest();
+
+            if (URLHelper::matches($url, $pendingRequest->getUrl())) {
+                return $response;
+            }
+
             return null;
         }
 
@@ -410,10 +445,17 @@ class MockClient
     /**
      * Test if the closure can pass with the history.
      */
-    private function checkClosureAgainstResponses(callable $closure): bool
+    private function checkClosureAgainstResponses(callable $closure, ?int $index = null): bool
     {
         if ($this->checkHistoryEmpty() === true) {
             return false;
+        }
+
+        if(! is_null($index)) {
+            $response = $this->getRecordedResponses()[$index];
+            $request = $response->getPendingRequest()->getRequest();
+
+            return $closure($request, $response);
         }
 
         // Let's first check if the latest response resolves the callable
