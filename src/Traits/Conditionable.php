@@ -11,11 +11,9 @@ trait Conditionable
     /**
      * Invoke a callable where a given value returns a truthy value.
      *
-     * @template TValue
-     *
-     * @param \Closure(): (TValue)|TValue $value
-     * @param callable($this, TValue): (void) $callback
-     * @param callable($this, TValue): (void)|null $default
+     * @param \Closure(): (mixed)|mixed $value
+     * @param callable($this, mixed): (void) $callback
+     * @param callable($this, mixed): (void)|null $default
      * @return $this
      */
     public function when(mixed $value, callable $callback, callable|null $default = null): static
@@ -38,11 +36,9 @@ trait Conditionable
     /**
      * Invoke a callable when a given value returns a falsy value.
      *
-     * @template TValue
-     *
-     * @param \Closure(): (TValue)|TValue $value
-     * @param callable($this, TValue): (void) $callback
-     * @param callable($this, TValue): (void)|null $default
+     * @param \Closure(): (mixed)|mixed $value
+     * @param callable($this, mixed): (void) $callback
+     * @param callable($this, mixed): (void)|null $default
      * @return $this
      */
     public function unless(mixed $value, callable $callback, callable|null $default = null): static
