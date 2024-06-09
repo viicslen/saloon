@@ -137,6 +137,23 @@ test('the object method will return an object', function () {
     expect($response)->object()->toEqual($dataAsObject);
 });
 
+test('the object method with a dot notation key value will return a nested string', function () {
+    $data = [
+        'contacts' => [
+            ['name' => 'Sam', 'work' => 'Codepotato'],
+            ['name' => 'Braunson', 'work' => 'Geekybeaver'],
+        ],
+    ];
+
+    $mockClient = new MockClient([
+        MockResponse::make($data, 500),
+    ]);
+
+    $response = connector()->send(new UserRequest, $mockClient);
+
+    expect($response)->object('contacts.1.name')->toEqual('Braunson');
+});
+
 test('the collect method will return a collection', function () {
     $mockClient = new MockClient([
         MockResponse::make(['name' => 'Sam', 'work' => 'Codepotato'], 500),

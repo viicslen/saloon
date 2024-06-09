@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.head_ref || github.ref || github.run_id }}_php_cs_fixer
+  cancel-in-progress: true
+
 jobs:
   php-cs-fixer:
     runs-on: ubuntu-latest

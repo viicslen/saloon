@@ -8,6 +8,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Tests\Fixtures\Requests\UserRequest;
 use Saloon\Tests\Fixtures\Requests\ErrorRequest;
+use PHPUnit\Framework\ExpectationFailedException;
 use Saloon\Tests\Fixtures\Connectors\TestConnector;
 
 test('assertSent works with a request', function () {
@@ -207,3 +208,47 @@ test('assertSent with a closure works with more than one request in the history'
         return $response->json() === ['name' => 'Marcel'] && $response->status() === 204;
     });
 });
+
+test('it can assert requests are sent in a specific order', function () {
+    $mockClient = new MockClient([
+        MockResponse::make(['name' => 'Sam']),
+        MockResponse::make(['name' => 'Taylor'], 201),
+        MockResponse::make(['name' => 'Marcel'], 204),
+    ]);
+
+    $connector = new TestConnector;
+
+    $connector->send(new UserRequest, $mockClient);
+    $connector->send(new UserRequest, $mockClient);
+    $connector->send(new UserRequest, $mockClient);
+
+    $mockClient->assertSentInOrder([
+        UserRequest::class,
+        function (UserRequest $request, Response $response) {
+            return $response->json() === ['name' => 'Taylor'];
+        },
+        '/user',
+    ]);
+});
+
+test('it can assert requests are sent in a specific order failure', function () {
+    $mockClient = new MockClient([
+        MockResponse::make(['name' => 'Sam']),
+        MockResponse::make(['name' => 'Taylor'], 201),
+        MockResponse::make(['name' => 'Marcel'], 204),
+    ]);
+
+    $connector = new TestConnector;
+
+    $connector->send(new UserRequest(userId: 2), $mockClient);
+    $connector->send(new UserRequest(userId: 1), $mockClient);
+    $connector->send(new UserRequest(), $mockClient);
+
+    $mockClient->assertSentInOrder([
+        UserRequest::class,
+        function (UserRequest $request) {
+            return $request->userId === 2;
+        },
+        '/user',
+    ]);
+})->expectException(ExpectationFailedException::class);

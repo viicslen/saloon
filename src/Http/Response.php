@@ -10,6 +10,7 @@ use SimpleXMLElement;
 use Saloon\Traits\Macroable;
 use InvalidArgumentException;
 use Saloon\Helpers\ArrayHelpers;
+use Saloon\Helpers\ObjectHelpers;
 use Saloon\XmlWrangler\XmlReader;
 use Illuminate\Support\Collection;
 use Saloon\Contracts\FakeResponse;
@@ -52,6 +53,11 @@ class Response
      * @var array<array-key, mixed>
      */
     protected array $decodedJson;
+
+    /**
+     * The decoded JSON response object.
+     */
+    protected mixed $decodedJsonObject;
 
     /**
      * The decoded XML response.
@@ -223,11 +229,19 @@ class Response
     }
 
     /**
-     * Get the JSON decoded body of the response as an object.
+     * Get the JSON decoded body of the response as an object or scalar value.
      */
-    public function object(): object
+    public function object(string|int|null $key = null, mixed $default = null): mixed
     {
-        return json_decode($this->body(), false, 512, JSON_THROW_ON_ERROR);
+        if (! isset($this->decodedJsonObject)) {
+            $this->decodedJsonObject = json_decode($this->body() ?: '{}', false, 512, JSON_THROW_ON_ERROR);
+        }
+
+        if (is_null($key)) {
+            return $this->decodedJsonObject;
+        }
+
+        return ObjectHelpers::get($this->decodedJsonObject, (string)$key, $default);
     }
 
     /**
@@ -235,7 +249,7 @@ class Response
      *
      * Suitable for reading small, simple XML responses but not suitable for
      * more advanced XML responses with namespaces and prefixes. Consider
-     * using the xmlReader method instead for better compatability.
+     * using the xmlReader method instead for better compatibility.
      *
      * @see https://www.php.net/manual/en/book.simplexml.php
      */
