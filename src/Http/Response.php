@@ -56,8 +56,6 @@ class Response
 
     /**
      * The decoded JSON response object.
-     *
-     * @var mixed
      */
     protected mixed $decodedJsonObject;
 
