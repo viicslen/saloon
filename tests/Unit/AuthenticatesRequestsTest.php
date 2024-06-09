@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use GuzzleHttp\RequestOptions;
 use Saloon\Exceptions\SaloonException;
+use Saloon\Http\Auth\NullAuthenticator;
 use Saloon\Http\Auth\MultiAuthenticator;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Auth\HeaderAuthenticator;
 use Saloon\Tests\Fixtures\Requests\UserRequest;
 use Saloon\Tests\Fixtures\Connectors\ArraySenderConnector;
+use Saloon\Tests\Fixtures\Connectors\DefaultAuthenticatorConnector;
 
 test('you can add basic auth to a request', function () {
     $request = new UserRequest;
@@ -105,4 +107,15 @@ test('you can use multiple authenticators at the same time using the defaultAuth
         'Authorization' => 'Bearer example',
         'X-API-Key' => 'api-key',
     ]);
+});
+
+test('you can use a null authenticator to disable default authentication entirely', function () {
+    $connector = new DefaultAuthenticatorConnector;
+    $request = new UserRequest;
+
+    $request->authenticate(new NullAuthenticator);
+
+    $pendingRequest = $connector->createPendingRequest($request);
+
+    expect($pendingRequest->headers()->all())->toEqual(['Accept' => 'application/json']);
 });
