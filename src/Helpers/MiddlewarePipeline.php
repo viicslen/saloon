@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Saloon\Helpers;
 
+use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Response;
 use Saloon\Enums\PipeOrder;
 use Saloon\Http\PendingRequest;
@@ -22,12 +23,18 @@ class MiddlewarePipeline
     protected Pipeline $responsePipeline;
 
     /**
+     * Fatal Pipeline
+     */
+    protected Pipeline $fatalPipeline;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
         $this->requestPipeline = new Pipeline;
         $this->responsePipeline = new Pipeline;
+        $this->fatalPipeline = new Pipeline;
     }
 
     /**
@@ -93,6 +100,33 @@ class MiddlewarePipeline
     }
 
     /**
+     * Add a middleware to run on fatal errors
+     *
+     * @param callable(\Throwable, \Saloon\Http\PendingRequest): (void) $callable
+     * @return $this
+     */
+    public function onFatalException(callable $callable, ?string $name = null, ?PipeOrder $order = null): static
+    {
+        /**
+         * For some reason, PHP is not destructing non-static Closures, or 'things' using non-static Closures, correctly, keeping unused objects intact.
+         * Using a *static* Closure, or re-binding it to an empty, anonymous class/object is a workaround for the issue.
+         * If we don't, things using the MiddlewarePipeline, in turn, won't destruct.
+         * Concretely speaking, for Saloon, this means that the Connector will *not* get destructed, and thereby also not the underlying client.
+         * Which in turn leaves open file handles until the process terminates.
+         *
+         * Do note that this is entirely about our *wrapping* Closure below.
+         * The provided callable doesn't affect the MiddlewarePipeline.
+         */
+        $this->fatalPipeline->pipe(static function (FatalRequestException $throwable) use ($callable): FatalRequestException {
+            $callable($throwable);
+
+            return $throwable;
+        }, $name, $order);
+
+        return $this;
+    }
+
+    /**
      * Process the request pipeline.
      */
     public function executeRequestPipeline(PendingRequest $pendingRequest): PendingRequest
@@ -106,6 +140,17 @@ class MiddlewarePipeline
     public function executeResponsePipeline(Response $response): Response
     {
         return $this->responsePipeline->process($response);
+    }
+
+    /**
+     * Process the fatal pipeline.
+     * @throws \Saloon\Exceptions\Request\FatalRequestException
+     */
+    public function executeFatalPipeline(FatalRequestException $throwable): void
+    {
+        $this->fatalPipeline->process($throwable);
+
+        throw $throwable;
     }
 
     /**
@@ -125,8 +170,14 @@ class MiddlewarePipeline
             $middlewarePipeline->getResponsePipeline()->getPipes()
         );
 
+        $fatalPipes = array_merge(
+            $this->getFatalPipeline()->getPipes(),
+            $middlewarePipeline->getFatalPipeline()->getPipes()
+        );
+
         $this->requestPipeline->setPipes($requestPipes);
         $this->responsePipeline->setPipes($responsePipes);
+        $this->fatalPipeline->setPipes($fatalPipes);
 
         return $this;
     }
@@ -145,5 +196,13 @@ class MiddlewarePipeline
     public function getResponsePipeline(): Pipeline
     {
         return $this->responsePipeline;
+    }
+
+    /**
+     * Get the fatal pipeline
+     */
+    public function getFatalPipeline(): Pipeline
+    {
+        return $this->fatalPipeline;
     }
 }

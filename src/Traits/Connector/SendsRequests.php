@@ -96,6 +96,7 @@ trait SendsRequests
                 // return the last response made or just throw an exception.
 
                 if ($attempts === $maxTries) {
+                    $this->middleware()->executeFatalPipeline($exception, $request);
                     return isset($exceptionResponse) && $throwOnMaxTries === false ? $exceptionResponse : throw $exception;
                 }
 
