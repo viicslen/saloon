@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Saloon\Helpers;
 
+use Saloon\Exceptions\Request\Statuses\PaymentRequiredException;
 use Throwable;
 use Saloon\Http\Response;
 use Saloon\Exceptions\Request\ClientException;
@@ -32,6 +33,7 @@ class RequestExceptionHelper
         $requestException = match (true) {
             // Built-in exceptions
             $status === 401 => UnauthorizedException::class,
+            $status === 402 => PaymentRequiredException::class,
             $status === 403 => ForbiddenException::class,
             $status === 404 => NotFoundException::class,
             $status === 405 => MethodNotAllowedException::class,
