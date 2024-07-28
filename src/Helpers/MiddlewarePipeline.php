@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Saloon\Helpers;
 
-use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Response;
 use Saloon\Enums\PipeOrder;
 use Saloon\Http\PendingRequest;
 use Saloon\Contracts\FakeResponse;
+use Saloon\Exceptions\Request\FatalRequestException;
 
 class MiddlewarePipeline
 {
@@ -149,8 +149,6 @@ class MiddlewarePipeline
     public function executeFatalPipeline(FatalRequestException $throwable): void
     {
         $this->fatalPipeline->process($throwable);
-
-        throw $throwable;
     }
 
     /**

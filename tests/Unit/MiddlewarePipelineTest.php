@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Saloon\Data\Pipe;
-use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Response;
 use Saloon\Enums\PipeOrder;
 use Saloon\Helpers\Pipeline;
@@ -12,13 +11,14 @@ use GuzzleHttp\Psr7\HttpFactory;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Helpers\MiddlewarePipeline;
-use Saloon\Tests\Fixtures\Connectors\TestConnector;
 use Saloon\Tests\Fixtures\Requests\UserRequest;
 use Saloon\Tests\Fixtures\Requests\ErrorRequest;
 use Saloon\Exceptions\DuplicatePipeNameException;
+use Saloon\Tests\Fixtures\Connectors\TestConnector;
+use Saloon\Exceptions\Request\FatalRequestException;
 
 describe('Request Middleware', function () {
-    test('you can add a request pipe to the middleware', function () {
+    test('you can add a pipe to the middleware', function () {
         $pipeline = new MiddlewarePipeline;
 
         $pipeline
@@ -36,7 +36,7 @@ describe('Request Middleware', function () {
         expect($pendingRequest->headers()->get('X-Pipe-Two'))->toEqual('Howdy');
     });
 
-    test('you can add a named request pipe to the middleware', function () {
+    test('you can add a named pipe to the middleware', function () {
         $pipeline = new MiddlewarePipeline;
 
         $pipeline
@@ -56,7 +56,7 @@ describe('Request Middleware', function () {
         expect($pendingRequest->headers()->get('X-Pipe-One'))->toEqual('Yee-Haw');
     });
 
-    test('the named request pipe must be unique', function () {
+    test('the named pipe must be unique', function () {
         $pipeline = new MiddlewarePipeline;
 
         $pipeline
@@ -79,7 +79,7 @@ describe('Request Middleware', function () {
             );
     });
 
-    test('if a request pipe returns a pending request, we will use that in the next step', function () {
+    test('if a pipe returns a pending request, we will use that in the next step', function () {
         $pipeline = new MiddlewarePipeline;
 
         $errorRequest = connector()->createPendingRequest(new ErrorRequest);
@@ -97,7 +97,7 @@ describe('Request Middleware', function () {
         expect($pendingRequest)->toBe($errorRequest);
     });
 
-    test('a request pipeline is run in order of pipes', function () {
+    test('a pipeline is run in order of pipes', function () {
         $pipeline = new MiddlewarePipeline;
         $names = [];
 
@@ -116,7 +116,7 @@ describe('Request Middleware', function () {
         expect($names)->toEqual(['Sam', 'Taylor']);
     });
 
-    test('a request pipe can be added to the top of the pipeline', function () {
+    test('a pipe can be added to the top of the pipeline', function () {
         $pipeline = new MiddlewarePipeline;
         $names = [];
 
@@ -138,7 +138,7 @@ describe('Request Middleware', function () {
         expect($names)->toEqual(['Taylor', 'Sam', 'Andrew']);
     });
 
-    test('a request pipe can be added to the bottom of the pipeline', function () {
+    test('a pipe can be added to the bottom of the pipeline', function () {
         $pipeline = new MiddlewarePipeline;
         $names = [];
 
@@ -162,7 +162,7 @@ describe('Request Middleware', function () {
 });
 
 describe('Response Middleware', function () {
-    test('you can add a named response pipe to the middleware', function () {
+    test('you can add a named pipe to the middleware', function () {
         $pipeline = new MiddlewarePipeline;
 
         $count = 0;
@@ -188,7 +188,7 @@ describe('Response Middleware', function () {
         expect($count)->toBe(1);
     });
 
-    test('the named response pipe must be unique', function () {
+    test('the named pipe must be unique', function () {
         $pipeline = new MiddlewarePipeline;
 
         $pipeline
@@ -205,7 +205,7 @@ describe('Response Middleware', function () {
             }, 'ResponsePipe');
     });
 
-    test('you can add a response pipe to the middleware', function () {
+    test('you can add a pipe to the middleware', function () {
         $mockClient = new MockClient([
             MockResponse::make(['name' => 'Sam']),
         ]);
@@ -233,7 +233,7 @@ describe('Response Middleware', function () {
         expect($count)->toBe(2);
     });
 
-    test('if a response pipe returns a response, we will use that in the next step', function () {
+    test('if a pipe returns a response, we will use that in the next step', function () {
         $mockClient = new MockClient([
             ErrorRequest::class => MockResponse::make(['error' => 'Server Error'], 500),
             UserRequest::class => MockResponse::make(['name' => 'Sam']),
@@ -254,7 +254,7 @@ describe('Response Middleware', function () {
         expect($response)->toBe($errorResponse);
     });
 
-    test('a response pipe is run in order of the pipes', function () {
+    test('a pipe is run in order of the pipes', function () {
         $mockClient = new MockClient([
             MockResponse::make(['name' => 'Sam']),
         ]);
@@ -278,7 +278,7 @@ describe('Response Middleware', function () {
         expect($names)->toEqual(['Sam', 'Taylor']);
     });
 
-    test('a response pipe can be added to the top of the pipeline', function () {
+    test('a pipe can be added to the top of the pipeline', function () {
         $mockClient = new MockClient([
             MockResponse::make(['name' => 'Sam']),
         ]);
@@ -305,7 +305,7 @@ describe('Response Middleware', function () {
         expect($names)->toEqual(['Taylor', 'Sam', 'Andrew']);
     });
 
-    test('a response pipe can be added to the bottom of the pipeline', function () {
+    test('a pipe can be added to the bottom of the pipeline', function () {
         $mockClient = new MockClient([
             MockResponse::make(['name' => 'Sam']),
         ]);
@@ -334,7 +334,7 @@ describe('Response Middleware', function () {
 });
 
 describe('Fatal Middleware', function () {
-    test('you can add a fatal pipe to the middleware', function () {
+    test('you can add a pipe to the middleware', function () {
         $pipeline = new MiddlewarePipeline;
 
         $count = 0;
@@ -353,144 +353,145 @@ describe('Fatal Middleware', function () {
         $connector = new TestConnector('https://saloon.doesnt-exist');
         $request = new UserRequest();
 
+        try {
+            $connector->send($request);
+        } catch (FatalRequestException $e) {
+            $pipeline->executeFatalPipeline($e);
+            expect($e)->toBeInstanceOf(FatalRequestException::class);
+            expect($count)->toBe(2);
+        }
+    });
 
+    test('you can add a named pipe to the middleware', function () {
+        $pipeline = new MiddlewarePipeline;
+
+        $count = 0;
+
+        $pipeline
+            ->onFatalException(function (FatalRequestException $exception) use (&$count) {
+                $count++;
+            }, 'FatalPipe');
+
+        $pipe = $pipeline->getFatalPipeline()->getPipes()[0];
+
+        expect($pipe)->toBeInstanceOf(Pipe::class);
+        expect($pipe->name)->toEqual('FatalPipe');
+        expect($pipe->order)->toBeNull();
+
+        $connector = new TestConnector('https://saloon.doesnt-exist');
+        $request = new UserRequest();
 
         try {
             $connector->send($request);
         } catch (FatalRequestException $e) {
-            try {
-                $pipeline->executeFatalPipeline($e);
-            } catch (FatalRequestException $e) {
-                expect($e)->toBeInstanceOf(FatalRequestException::class);
-                expect($count)->toBe(2);
-            }
+            $pipeline->executeFatalPipeline($e);
+            expect($e)->toBeInstanceOf(FatalRequestException::class);
+            expect($count)->toBe(1);
         }
-
     });
-//
-//    test('you can add a named request pipe to the middleware', function () {
-//        $pipeline = new MiddlewarePipeline;
-//
-//        $pipeline
-//            ->onRequest(function (PendingRequest $request) {
-//                $request->headers()->add('X-Pipe-One', 'Yee-Haw');
-//            }, 'YeeHawPipe');
-//
-//        $pipe = $pipeline->getRequestPipeline()->getPipes()[0];
-//
-//        expect($pipe)->toBeInstanceOf(Pipe::class);
-//        expect($pipe->name)->toEqual('YeeHawPipe');
-//        expect($pipe->order)->toBeNull();
-//
-//        $pendingRequest = connector()->createPendingRequest(new UserRequest);
-//        $pendingRequest = $pipeline->executeRequestPipeline($pendingRequest);
-//
-//        expect($pendingRequest->headers()->get('X-Pipe-One'))->toEqual('Yee-Haw');
-//    });
-//
-//    test('the named request pipe must be unique', function () {
-//        $pipeline = new MiddlewarePipeline;
-//
-//        $pipeline
-//            ->onRequest(
-//                callable: function (PendingRequest $request) {
-//                    $request->headers()->add('X-Pipe-One', 'Yee-Haw');
-//                },
-//                name: 'YeeHawPipe'
-//            );
-//
-//        $this->expectException(DuplicatePipeNameException::class);
-//        $this->expectExceptionMessage('The "YeeHawPipe" pipe already exists on the pipeline');
-//
-//        $pipeline
-//            ->onRequest(
-//                callable: function (PendingRequest $request) {
-//                    $request->headers()->add('X-Pipe-One', 'Yee-Haw');
-//                },
-//                name: 'YeeHawPipe'
-//            );
-//    });
-//
-//    test('if a request pipe returns a pending request, we will use that in the next step', function () {
-//        $pipeline = new MiddlewarePipeline;
-//
-//        $errorRequest = connector()->createPendingRequest(new ErrorRequest);
-//
-//        $pipeline
-//            ->onRequest(function (PendingRequest $request) use ($errorRequest) {
-//                $request->headers()->add('X-Pipe-One', 'Yee-Haw');
-//
-//                return $errorRequest;
-//            });
-//
-//        $pendingRequest = connector()->createPendingRequest(new UserRequest);
-//        $pendingRequest = $pipeline->executeRequestPipeline($pendingRequest);
-//
-//        expect($pendingRequest)->toBe($errorRequest);
-//    });
-//
-//    test('a request pipeline is run in order of pipes', function () {
-//        $pipeline = new MiddlewarePipeline;
-//        $names = [];
-//
-//        $pipeline
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Sam';
-//            })
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Taylor';
-//            });
-//
-//        $pendingRequest = connector()->createPendingRequest(new UserRequest);
-//
-//        $pipeline->executeRequestPipeline($pendingRequest);
-//
-//        expect($names)->toEqual(['Sam', 'Taylor']);
-//    });
-//
-//    test('a request pipe can be added to the top of the pipeline', function () {
-//        $pipeline = new MiddlewarePipeline;
-//        $names = [];
-//
-//        $pipeline
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Sam';
-//            })
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Taylor';
-//            }, order: PipeOrder::FIRST)
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Andrew';
-//            });
-//
-//        $pendingRequest = connector()->createPendingRequest(new UserRequest);
-//
-//        $pipeline->executeRequestPipeline($pendingRequest);
-//
-//        expect($names)->toEqual(['Taylor', 'Sam', 'Andrew']);
-//    });
-//
-//    test('a request pipe can be added to the bottom of the pipeline', function () {
-//        $pipeline = new MiddlewarePipeline;
-//        $names = [];
-//
-//        $pipeline
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Sam';
-//            })
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Taylor';
-//            }, order: PipeOrder::LAST)
-//            ->onRequest(function (PendingRequest $request) use (&$names) {
-//                $names[] = 'Andrew';
-//            });
-//
-//        $pendingRequest = connector()->createPendingRequest(new UserRequest);
-//
-//        $pipeline->executeRequestPipeline($pendingRequest);
-//
-//        expect($names)->toEqual(['Sam', 'Andrew', 'Taylor']);
-//    });
+
+    test('the named pipe must be unique', function () {
+        $pipeline = new MiddlewarePipeline;
+
+        $count = 0;
+
+        $pipeline
+            ->onFatalException(
+                callable: function (PendingRequest $request) use (&$count) {
+                    $count++;
+                },
+                name: 'YeeHawPipe'
+            );
+
+        $this->expectException(DuplicatePipeNameException::class);
+        $this->expectExceptionMessage('The "YeeHawPipe" pipe already exists on the pipeline');
+
+        $pipeline
+            ->onFatalException(
+                callable: function (PendingRequest $request) use (&$count) {
+                    $count++;
+                },
+                name: 'YeeHawPipe'
+            );
+    });
+
+    test('a pipe is run in order of the pipes', function () {
+        $names = [];
+
+        $pipeline = new MiddlewarePipeline;
+
+        $pipeline
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Sam';
+            })
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Taylor';
+            });
+
+        $connector = new TestConnector('https://saloon.doesnt-exist');
+        $request = new UserRequest();
+
+        try {
+            $connector->send($request);
+        } catch (FatalRequestException $e) {
+            $pipeline->executeFatalPipeline($e);
+            expect($names)->toEqual(['Sam', 'Taylor']);
+        }
+    });
+
+    test('a pipe can be added to the top of the pipeline', function () {
+        $names = [];
+
+        $pipeline = new MiddlewarePipeline;
+
+        $pipeline
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Sam';
+            })
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Taylor';
+            }, order: PipeOrder::FIRST)
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Andrew';
+            });
+
+        $connector = new TestConnector('https://saloon.doesnt-exist');
+        $request = new UserRequest();
+
+        try {
+            $connector->send($request);
+        } catch (FatalRequestException $e) {
+            $pipeline->executeFatalPipeline($e);
+            expect($names)->toEqual(['Taylor', 'Sam', 'Andrew']);
+        }
+    });
+
+    test('a pipe can be added to the bottom of the pipeline', function () {
+        $names = [];
+
+        $pipeline = new MiddlewarePipeline;
+
+        $pipeline
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Sam';
+            })
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Taylor';
+            }, order: PipeOrder::LAST)
+            ->onFatalException(function (FatalRequestException $exception) use (&$names) {
+                $names[] = 'Andrew';
+            });
+
+        $connector = new TestConnector('https://saloon.doesnt-exist');
+        $request = new UserRequest();
+
+        try {
+            $connector->send($request);
+        } catch (FatalRequestException $e) {
+            $pipeline->executeFatalPipeline($e);
+            expect($names)->toEqual(['Sam', 'Andrew', 'Taylor']);
+        }
+    });
 });
 
 test('you can merge a middleware pipeline together', closure: function () {
