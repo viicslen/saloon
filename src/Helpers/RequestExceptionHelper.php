@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Saloon\Helpers;
 
-use Saloon\Exceptions\Request\Statuses\PaymentRequiredException;
 use Throwable;
 use Saloon\Http\Response;
 use Saloon\Exceptions\Request\ClientException;
@@ -15,6 +14,7 @@ use Saloon\Exceptions\Request\Statuses\ForbiddenException;
 use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 use Saloon\Exceptions\Request\Statuses\GatewayTimeoutException;
 use Saloon\Exceptions\Request\Statuses\RequestTimeOutException;
+use Saloon\Exceptions\Request\Statuses\PaymentRequiredException;
 use Saloon\Exceptions\Request\Statuses\TooManyRequestsException;
 use Saloon\Exceptions\Request\Statuses\MethodNotAllowedException;
 use Saloon\Exceptions\Request\Statuses\ServiceUnavailableException;
