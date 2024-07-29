@@ -102,7 +102,7 @@ class MiddlewarePipeline
     /**
      * Add a middleware to run on fatal errors
      *
-     * @param callable(\Throwable, \Saloon\Http\PendingRequest): (void) $callable
+     * @param callable(FatalRequestException): (void) $callable
      * @return $this
      */
     public function onFatalException(callable $callable, ?string $name = null, ?PipeOrder $order = null): static
