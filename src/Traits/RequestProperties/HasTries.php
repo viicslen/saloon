@@ -60,7 +60,7 @@ trait HasTries
         return $this;
     }
     
-    public function withExponentialBackoff(?bool $exponentialBackoff): static
+    public function withExponentialBackoff(?bool $exponentialBackoff = true): static
     {
         $this->useExponentialBackoff = $exponentialBackoff;
 
@@ -91,6 +91,16 @@ trait HasTries
         }
 
         return $this;
+    }
+
+    public function withoutRetryInterval(): static
+    {
+        return $this->withRetryInterval(null);
+    }
+    
+    public function withoutExponentialBackoff(): static
+    {
+        return $this->withExponentialBackoff(false);
     }
 
     public function withoutRetry(): static
