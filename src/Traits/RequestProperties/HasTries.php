@@ -52,4 +52,49 @@ trait HasTries
     {
         return true;
     }
+
+    public function withRetryInterval(?int $milliseconds): static
+    {
+        $this->retryInterval = $milliseconds;
+
+        return $this;
+    }
+    
+    public function withExponentialBackoff(?bool $exponentialBackoff): static
+    {
+        $this->useExponentialBackoff = $exponentialBackoff;
+
+        return $this;
+    }
+
+    public function throwOnMaxTries(?bool $throwOnMaxTries): static
+    {
+        $this->throwOnMaxTries = $throwOnMaxTries;
+
+        return $this;
+    }
+
+    public function withRetry(?int $tries, ?int $intervalMilliseconds = null, ?bool $exponentialBackoff = null, ?bool $throwOnMaxTries = null): static
+    {
+        $this->tries = $tries;
+
+        if ($intervalMilliseconds) {
+            $this->withRetryInterval($intervalMilliseconds);
+        }
+
+        if ($exponentialBackoff) {
+            $this->withExponentialBackoff($exponentialBackoff);
+        }
+
+        if ($throwOnMaxTries) {
+            $this->throwOnMaxTries($throwOnMaxTries);
+        }
+
+        return $this;
+    }
+
+    public function withoutRetry(): static
+    {
+        return $this->withRetry(null);
+    }
 }
