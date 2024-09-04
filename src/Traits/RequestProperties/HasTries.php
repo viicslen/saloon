@@ -67,7 +67,7 @@ trait HasTries
         return $this;
     }
 
-    public function throwOnMaxTries(?bool $throwOnMaxTries): static
+    public function throwOnMaxTries(?bool $throwOnMaxTries = true): static
     {
         $this->throwOnMaxTries = $throwOnMaxTries;
 
